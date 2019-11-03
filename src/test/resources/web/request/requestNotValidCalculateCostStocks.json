@@ -1,6 +1,8 @@
 {
-  "stocks": {
-    "symbol": "AAPL",
-    "volume": 50
-  }
+  "stocks": [
+    {
+      "symbol": "",
+      "volume": "notValidValue"
+    }
+  ]
 }

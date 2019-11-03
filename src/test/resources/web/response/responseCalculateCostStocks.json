@@ -1,15 +1,1 @@
-{
-  "value": 1600000,
-  "allocations": [
-    {
-      "sector": "Technology",
-      "assetValue": 600000,
-      "proportion": 0.375
-    },
-    {
-      "sector": "Healthcare",
-      "assetValue": 1000000,
-      "proportion": 0.625
-    }
-  ]
-}
+{"value":1600000,"allocations":[{"sector":"Technology","assetValue":600000,"proportion":0.375},{"sector":"Healthcare","assetValue":1000000,"proportion":0.625}]}
