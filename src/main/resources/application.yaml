@@ -1,0 +1,8 @@
+server:
+  port: 8888
+
+iex:
+  api:
+    token: "pk_93586b0cd7034d7fbad5385fd5152f30"
+  thread:
+    quantity: 10
