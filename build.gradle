@@ -1,10 +1,6 @@
 buildscript {
     repositories {
         mavenCentral()
-        maven { url 'https://repo.spring.io/milestone' }
-    }
-    dependencies {
-        classpath 'org.springframework.cloud:spring-cloud-contract-gradle-plugin:2.2.0.RC1'
     }
 }
 
@@ -14,11 +10,10 @@ plugins {
     id 'java'
 }
 
-apply plugin: 'spring-cloud-contract'
-
 group = 'com.sapozhnikov'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
+targetCompatibility = '11'
 
 configurations {
     compileOnly {
@@ -41,4 +36,8 @@ dependencies {
 
 test {
     useJUnitPlatform()
+}
+
+bootJar {
+    archiveFileName = "${project.name}.jar"
 }
