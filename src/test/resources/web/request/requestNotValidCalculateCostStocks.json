@@ -1,0 +1,8 @@
+{
+  "stocks": [
+    {
+      "symbol": "",
+      "volume": "notValidValue"
+    }
+  ]
+}
