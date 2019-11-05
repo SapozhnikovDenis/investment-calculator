@@ -1,6 +1,7 @@
 package com.sapozhnikov.investment.calculator.services.impl;
 
 import com.sapozhnikov.investment.calculator.services.FinancialService;
+import com.sapozhnikov.investment.calculator.services.StockCalculator;
 import com.sapozhnikov.investment.calculator.services.StockService;
 import com.sapozhnikov.investment.calculator.services.dto.internal.StockInfoInternal;
 import com.sapozhnikov.investment.calculator.web.dto.request.StockRequest;
@@ -20,67 +21,39 @@ import static java.math.BigDecimal.ZERO;
 @RequiredArgsConstructor
 public class StockServiceImpl implements StockService {
 
-    private static final int SCALE_FOR_PROPORTION = 3;
-    private static final int ONE_HUNDRED = 100;
-
     private final FinancialService financialService;
+    private final StockCalculator stockCalculator;
 
     @Override
     public StocksCostCalculateResponse calculateCost(StocksCostCalculateRequest stocksCostCalculateRequest) {
-        var allocationResponses = getAllocations(stocksCostCalculateRequest.getStocks());
-        var sum = calculateSum(allocationResponses);
-        enrichProportion(allocationResponses, sum);
-        return new StocksCostCalculateResponse(sum, allocationResponses);
+        Set<StockRequest> setStockRequests = new HashSet<>(stocksCostCalculateRequest.getStocks());
+        Map<StockRequest, StockInfoInternal> stockInfos = financialService.getStockInfo(setStockRequests);
+        List<AllocationResponse> allocationResponses = getAllocationResponses(stockInfos);
+        BigDecimal sum = stockCalculator.calculateSum(allocationResponses);
+        List<AllocationResponse> allocationResponsesWithProportion =
+                stockCalculator.enrichProportion(allocationResponses, sum);
+        return new StocksCostCalculateResponse(sum, allocationResponsesWithProportion);
     }
 
-    private List<AllocationResponse> getAllocations(List<StockRequest> stockRequests) {
-        var stockInfos = financialService.getStockInfo(new HashSet<>(stockRequests));
+    private List<AllocationResponse> getAllocationResponses(Map<StockRequest, StockInfoInternal> stockInfos) {
         Map<String, AllocationResponse> allocationsGroupBySector = new HashMap<>();
         for (StockRequest stockRequest : stockInfos.keySet()) {
             StockInfoInternal stockInfo = stockInfos.get(stockRequest);
-            var sector = stockInfo.getSector();
+            String sector = stockInfo.getSector();
             Optional<AllocationResponse> optionalAllocationResponse =
                     Optional.ofNullable(allocationsGroupBySector.get(sector));
-            var latestPrice = calculateLatestPrice(
+            BigDecimal latestPrice = stockCalculator.calculateLatestPrice(
                     optionalAllocationResponse, stockRequest.getVolume(), stockInfo.getLatestPrice());
-            var allocationResponse = new AllocationResponse(sector, latestPrice, ZERO);
+            AllocationResponse allocationResponse = buildAllocation(sector, latestPrice);
             allocationsGroupBySector.put(sector, allocationResponse);
         }
         return new ArrayList<>(allocationsGroupBySector.values());
     }
 
-    private BigDecimal calculateLatestPrice(Optional<AllocationResponse> optionalAllocation,
-                                            BigDecimal volume, BigDecimal latestPrice) {
-        latestPrice = sutTrailingZerosAndScale(latestPrice.multiply(volume));
-        return optionalAllocation.isPresent() ?
-                optionalAllocation.get().getAssetValue().add(latestPrice)
-                : latestPrice;
-    }
-
-    private BigDecimal calculateSum(List<AllocationResponse> allocationResponses) {
-        return sutTrailingZerosAndScale(allocationResponses
-                .stream()
-                .map(AllocationResponse::getAssetValue)
-                .reduce(BigDecimal::add)
-                .orElse(ZERO));
-    }
-
-    private void enrichProportion(List<AllocationResponse> allocations, BigDecimal sum) {
-        allocations.forEach(allocationResponse -> enrichProportion(allocationResponse, sum));
-    }
-
-    private void enrichProportion(AllocationResponse allocation, BigDecimal sum) {
-        allocation.setProportion(calculateProportion(sum, allocation.getAssetValue()));
-    }
-
-    private BigDecimal calculateProportion(BigDecimal sum, BigDecimal assetValue) {
-        double proportion = assetValue.doubleValue() * ONE_HUNDRED / sum.doubleValue();
-        return sutTrailingZerosAndScale(new BigDecimal(proportion));
-    }
-
-    private BigDecimal sutTrailingZerosAndScale(BigDecimal value) {
-        return new BigDecimal(value.setScale(SCALE_FOR_PROPORTION, RoundingMode.HALF_DOWN)
-                .stripTrailingZeros()
-                .toPlainString());
+    private AllocationResponse buildAllocation(String sector, BigDecimal latestPrice) {
+        return AllocationResponse.builder()
+                        .sector(sector)
+                        .assetValue(latestPrice)
+                        .build();
     }
 }
