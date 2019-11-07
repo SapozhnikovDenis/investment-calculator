@@ -1,16 +1,13 @@
 package com.sapozhnikov.investment.calculator.web.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@RequiredArgsConstructor
 public class StocksCostCalculateResponse {
-    private BigDecimal value;
-    private List<AllocationResponse> allocations;
+    private final BigDecimal value;
+    private final List<AllocationResponse> allocations;
 }
