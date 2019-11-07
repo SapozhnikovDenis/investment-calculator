@@ -1,18 +1,13 @@
 package com.sapozhnikov.investment.calculator.web.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 
-@Data
-@Builder(toBuilder = true)
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@RequiredArgsConstructor
 public class AllocationResponse {
-    private String sector;
-    private BigDecimal assetValue;
-    private BigDecimal proportion;
+    private final String sector;
+    private final BigDecimal assetValue;
+    private final BigDecimal proportion;
 }
